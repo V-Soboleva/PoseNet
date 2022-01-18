@@ -45,13 +45,6 @@ class PoseLoss(nn.Module):
         self.sx = nn.Parameter(torch.Tensor([sx]), requires_grad=self.learn_beta)
         self.sq = nn.Parameter(torch.Tensor([sq]), requires_grad=self.learn_beta)
 
-        # if learn_beta:
-        #     self.sx.requires_grad = True
-        #     self.sq.requires_grad = True
-        #
-        # self.sx = self.sx.to(device)
-        # self.sq = self.sq.to(device)
-
         self.loss_print = None
 
     def forward(self, pred_x, pred_q, target_x, target_q):
@@ -97,15 +90,6 @@ class ResNet(nn.Module):
                 if module.bias is not None:
                     nn.init.constant_(module.bias, 0)
 
-        # nn.init.normal_(self.fc_last.weight, 0, 0.01)
-        # nn.init.constant_(self.fc_last.bias, 0)
-        #
-        # nn.init.normal_(self.fc_position.weight, 0, 0.5)
-        # nn.init.constant_(self.fc_position.bias, 0)
-        #
-        # nn.init.normal_(self.fc_rotation.weight, 0, 0.01)
-        # nn.init.constant_(self.fc_rotation.bias, 0)
-
     def forward(self, x):
         x = self.base_model(x)
         x = x.view(x.size(0), -1)
@@ -121,39 +105,6 @@ class ResNet(nn.Module):
 
         return position, rotation, x_fully
 
-
-class ResNetSimple(nn.Module):
-    def __init__(self, base_model, fixed_weight=False, dropout_rate=0.0):
-        super(ResNetSimple, self).__init__()
-        self.dropout_rate = dropout_rate
-        feat_in = base_model.fc.in_features
-
-        self.base_model = nn.Sequential(*list(base_model.children())[:-1])
-        # self.base_model = base_model
-
-        if fixed_weight:
-            for param in self.base_model.parameters():
-                param.requires_grad = False
-
-        # self.fc_last = nn.Linear(feat_in, 2048, bias=True)
-        self.fc_position = nn.Linear(feat_in, 3, bias=False)
-        self.fc_rotation = nn.Linear(feat_in, 4, bias=False)
-
-        init_modules = [self.fc_position, self.fc_rotation]
-
-        for module in init_modules:
-            if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-                nn.init.kaiming_normal(module.weight.data)
-                if module.bias is not None:
-                    nn.init.constant(module.bias.data, 0)
-
-    def forward(self, x):
-        x = self.base_model(x)
-        x = x.view(x.size(0), -1)
-        position = self.fc_position(x)
-        rotation = self.fc_rotation(x)
-
-        return position, rotation
 
 class GoogleNet(nn.Module):
     """ PoseNet using Inception V3 """
