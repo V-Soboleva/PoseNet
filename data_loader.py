@@ -99,11 +99,10 @@ def get_loader(model, image_path, metadata_path, mode, batch_size, is_shuffle=Fa
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
-        # metadata_path_val = '/mnt/data2/image_based_localization/posenet/KingsCollege/dataset_test.txt'
+
         datasets = {'train': CustomDataset(image_path, metadata_path, 'train', transform, num_val),
                     'val': CustomDataset(image_path, metadata_path, 'val', transform, num_val)}
-        # data_loaders = {x: DataLoader(datasets[x], batch_size, is_shuffle, num_workers=batch_size)
-        #                 for x in ['train', 'val']}
+
         data_loaders = {'train': DataLoader(datasets['train'], batch_size, is_shuffle, num_workers=4),
                         'val': DataLoader(datasets['val'], batch_size, is_shuffle, num_workers=4)}
     elif mode == 'test':
